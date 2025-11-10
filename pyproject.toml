@@ -3,8 +3,8 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "salome-to-python"
-version = "0.1.0"
+name = "Salome2Py"
+version = "0.4.0"
 description = "Convert Salomé-Meca MED meshes and Code_Aster .comm files into NumPy-ready Python data."
 authors = [{ name = "Louis Remes" }]
 license = { text = "Proprietary" }
@@ -18,7 +18,7 @@ readme = "README.md"
 keywords = ["salome", "med", "code_aster", "finite element", "meshio"]
 
 [project.scripts]
-SalomeToPython = "main:main"
+Salome2Py = "main:main"
 
 [tool.setuptools]
 py-modules = ["main"]

@@ -4,3 +4,13 @@ Output/
 context.md
 input_example.py
 *.sh
+
+# --- Build & packaging artifacts ---
+build/
+dist/
+.wheels/
+*.egg-info/
+.eggs/
+*.egg
+pip-wheel-metadata/
+MANIFEST    

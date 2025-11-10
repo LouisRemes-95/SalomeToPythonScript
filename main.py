@@ -546,7 +546,8 @@ def write_case_file(
 ) -> Path:
     """Persist extracted data into a Python module."""
     case_name = case_dir.name.lower()
-    output_path = explicit_output or (case_dir.parent / f"{case_name}.py")
+    output_path = explicit_output or (Path.cwd() / f"{case_name}.py")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     elem_export = elem.copy()
     if elem_export.shape[1] >= 6:
