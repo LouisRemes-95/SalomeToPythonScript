@@ -1,0 +1,6 @@
+.venv/
+Input/
+Output/
+context.md
+input_example.py
+*.sh
