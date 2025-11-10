@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "salome-to-python"
+version = "0.1.0"
+description = "Convert Salomé-Meca MED meshes and Code_Aster .comm files into NumPy-ready Python data."
+authors = [{ name = "Louis Remes" }]
+license = { text = "Proprietary" }
+requires-python = ">=3.10"
+dependencies = [
+    "meshio>=5.3.5",
+    "h5py>=3.15",
+    "numpy>=1.26"
+]
+readme = "README.md"
+keywords = ["salome", "med", "code_aster", "finite element", "meshio"]
+
+[project.scripts]
+SalomeToPython = "main:main"
+
+[tool.setuptools]
+py-modules = ["main"]
