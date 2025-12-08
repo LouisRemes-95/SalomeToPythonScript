@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Salome2Py"
-version = "0.4.0"
+version = "0.5.0"
 description = "Convert Salomé-Meca MED meshes and Code_Aster .comm files into NumPy-ready Python data."
 authors = [{ name = "Louis Remes" }]
 license = { text = "Proprietary" }

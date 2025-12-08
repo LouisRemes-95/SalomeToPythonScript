@@ -87,7 +87,7 @@ def load_salome_mesh(med_path: Path) -> meshio.Mesh:
 
 def build_cli_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="SalomeToPython",
+        prog="Salome2Py",
         description="Convert Salomé-Meca MED + Code_Aster .comm files into NumPy-friendly Python data.",
     )
     parser.add_argument(
