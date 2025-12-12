@@ -221,30 +221,52 @@ def _extract_keyword_blocks(text: str, keyword: str) -> list[str]:
 
 
 def parse_group_material_assignments(comm_text: str) -> dict[str, str]:
-    """Map mesh group names (GROUP_MA) to material names from AFFE_MATERIAU."""
+    """
+    Map mesh group names (GROUP_MA) to material names from AFFE_MATERIAU.
+
+    Also supports the common Code_Aster pattern:
+        AFFE=_F(MATER=(steel,), TOUT='OUI')
+    which applies a single material to all elements. In that case we record a
+    special default mapping under the "__ALL__" key.
+    """
     affe_body = extract_function_body(comm_text, "AFFE_MATERIAU")
     mapping: dict[str, str] = {}
 
     for block in _extract_f_blocks(affe_body):
-        if "GROUP_MA" not in block or "MATER" not in block:
+        if "MATER" not in block:
             continue
 
-        group_match = re.search(r"GROUP_MA\s*=\s*\((.*?)\)", block, re.DOTALL)
         mater_match = re.search(r"MATER\s*=\s*\((.*?)\)", block, re.DOTALL)
-        if not (group_match and mater_match):
+        mater_name_match = (
+            re.search(r"([A-Za-z_][A-Za-z0-9_]*)", mater_match.group(1))
+            if mater_match
+            else None
+        )
+        if not mater_name_match:
             continue
-
-        group_names = re.findall(r"'([^']+)'", group_match.group(1))
-        mater_name_match = re.search(r"([A-Za-z_][A-Za-z0-9_]*)", mater_match.group(1))
-        if not (group_names and mater_name_match):
-            continue
-
         mater_name = mater_name_match.group(1)
-        for group in group_names:
-            mapping[group] = mater_name
+
+        # Group-specific assignment.
+        if "GROUP_MA" in block:
+            group_match = re.search(r"GROUP_MA\s*=\s*\((.*?)\)", block, re.DOTALL)
+            if not group_match:
+                continue
+            group_names = re.findall(r"'([^']+)'", group_match.group(1))
+            if not group_names:
+                continue
+            for group in group_names:
+                mapping[group] = mater_name
+            continue
+
+        # Default assignment to whole mesh: TOUT='OUI'
+        tout_match = re.search(r"TOUT\s*=\s*'OUI'|TOUT\s*=\s*\"OUI\"", block)
+        if tout_match:
+            mapping["__ALL__"] = mater_name
 
     if not mapping:
-        raise ValueError("No GROUP_MA to MATER assignments found in AFFE_MATERIAU.")
+        raise ValueError(
+            "No material assignments found in AFFE_MATERIAU (expected GROUP_MA=... or TOUT='OUI')."
+        )
 
     return mapping
 
@@ -397,9 +419,10 @@ def build_tag_to_material_index(
     """Return mapping from MED family id to `mater` row index (1-based)."""
     material_lookup = {name: idx + 1 for idx, (name, _, _) in enumerate(material_rows)}
     tag_to_material: dict[int, int] = {}
+    default_material = group_assignments.get("__ALL__")
 
     for family_id, group_name in family_map.items():
-        material_name = group_assignments.get(group_name)
+        material_name = group_assignments.get(group_name) or default_material
         if not material_name:
             continue
         if material_name not in material_lookup:
@@ -407,7 +430,10 @@ def build_tag_to_material_index(
         tag_to_material[family_id] = material_lookup[material_name]
 
     if not tag_to_material:
-        raise ValueError("Failed to build any material mappings from MED groups.")
+        raise ValueError(
+            "Failed to build any material mappings from MED groups. "
+            "Check AFFE_MATERIAU assignments."
+        )
 
     return tag_to_material
 
